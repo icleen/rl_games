@@ -62,9 +62,9 @@ class ModelA2C(BaseModel):
 
         def is_rnn(self):
             return self.a2c_network.is_rnn()
-        
+
         def get_default_rnn_state(self):
-            return self.a2c_network.get_default_rnn_state()            
+            return self.a2c_network.get_default_rnn_state()
 
         def kl(self, p_dict, q_dict):
             p = p_dict['logits']
@@ -115,7 +115,7 @@ class ModelA2CMultiDiscrete(BaseModel):
 
         def is_rnn(self):
             return self.a2c_network.is_rnn()
-        
+
         def get_default_rnn_state(self):
             return self.a2c_network.get_default_rnn_state()
 
@@ -133,7 +133,7 @@ class ModelA2CMultiDiscrete(BaseModel):
             if is_train:
                 if action_masks is None:
                     categorical = [Categorical(logits=logit) for logit in logits]
-                else:   
+                else:
                     categorical = [CategoricalMasked(logits=logit, masks=mask) for logit, mask in zip(logits, action_masks)]
                 prev_actions = torch.split(prev_actions, 1, dim=-1)
                 prev_neglogp = [-c.log_prob(a.squeeze()) for c,a in zip(categorical, prev_actions)]
@@ -151,9 +151,9 @@ class ModelA2CMultiDiscrete(BaseModel):
             else:
                 if action_masks is None:
                     categorical = [Categorical(logits=logit) for logit in logits]
-                else:   
-                    categorical = [CategoricalMasked(logits=logit, masks=mask) for logit, mask in zip(logits, action_masks)]                
-                
+                else:
+                    categorical = [CategoricalMasked(logits=logit, masks=mask) for logit, mask in zip(logits, action_masks)]
+
                 selected_action = [c.sample().long() for c in categorical]
                 neglogp = [-c.log_prob(a.squeeze()) for c,a in zip(categorical, selected_action)]
                 selected_action = torch.stack(selected_action, dim=-1)
@@ -179,7 +179,7 @@ class ModelA2CContinuous(BaseModel):
 
         def is_rnn(self):
             return self.a2c_network.is_rnn()
-            
+
         def get_default_rnn_state(self):
             return self.a2c_network.get_default_rnn_state()
 
@@ -219,7 +219,7 @@ class ModelA2CContinuous(BaseModel):
                     'mus' : mu,
                     'sigmas' : sigma
                 }
-                return  result          
+                return  result
 
 
 class ModelA2CContinuousLogStd(BaseModel):
@@ -234,9 +234,15 @@ class ModelA2CContinuousLogStd(BaseModel):
 
         def is_rnn(self):
             return self.a2c_network.is_rnn()
-            
+
         def get_default_rnn_state(self):
             return self.a2c_network.get_default_rnn_state()
+
+        def freeze_actor(self):
+            return self.a2c_network.freeze_actor()
+
+        def unfreeze_actor(self):
+            return self.a2c_network.unfreeze_actor()
 
         def forward(self, input_dict):
             is_train = input_dict.get('is_train', True)
@@ -255,7 +261,7 @@ class ModelA2CContinuousLogStd(BaseModel):
                     'rnn_states' : states,
                     'mus' : mu,
                     'sigmas' : sigma
-                }                
+                }
                 return result
             else:
                 selected_action = distr.sample()
@@ -316,7 +322,7 @@ class ModelSACContinuous(BaseModel):
     def __init__(self, network):
         BaseModel.__init__(self, 'sac')
         self.network_builder = network
-    
+
     class Network(BaseModelNetwork):
         def __init__(self, sac_network,**kwargs):
             BaseModelNetwork.__init__(self,**kwargs)
@@ -330,7 +336,7 @@ class ModelSACContinuous(BaseModel):
 
         def actor(self, obs):
             return self.sac_network.actor(obs)
-        
+
         def is_rnn(self):
             return False
 
@@ -339,6 +345,3 @@ class ModelSACContinuous(BaseModel):
             mu, sigma = self.sac_network(input_dict)
             dist = SquashedNormal(mu, sigma)
             return dist
-
-
-
