@@ -249,7 +249,7 @@ class ModelA2CContinuousLogStd(BaseModel):
             prev_actions = input_dict.get('prev_actions', None)
             input_dict['obs'] = self.norm_obs(input_dict['obs'])
             mu, logstd, value, states = self.a2c_network(input_dict)
-            sigma = torch.exp(logstd)
+            sigma = torch.exp(logstd) # subtract 5 or 10 to reduce the value without zeroing out in other places
             distr = torch.distributions.Normal(mu, sigma)
             if is_train:
                 entropy = distr.entropy().sum(dim=-1)

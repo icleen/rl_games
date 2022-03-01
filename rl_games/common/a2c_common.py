@@ -325,10 +325,8 @@ class A2CBase(BaseAlgorithm):
                 value = self.get_central_value(input_dict)
                 res_dict['values'] = value
         # TODO: add option to zero out the action for however many steps
-        # if self.epoch_num < 100:
-        #     res_dict['actions'] *= 0.
-        # elif self.epoch_num == 100:
-        #     print('not zeroing anymore!!!')
+        if self.epoch_num < self.zero_steps:
+            res_dict['actions'] *= 0.
         return res_dict
 
     def get_values(self, obs):
